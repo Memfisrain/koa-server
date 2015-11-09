@@ -3,8 +3,39 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
+    <style type="text/css">
+			form {
+				display: inline-block;
+				padding: 15px;
+				border: 1px solid #ccc;
+			}
+    </style>
 </head>
 <body>
+	<form>
+		<p>
+			<label for="email">Email</label>
+			<input id="email" type="text" name="email">
+		</p>
+		<p>
+			<label for="firstName">FirstName</label>
+			<input id="firstName" type="text" name="firstName">
+		</p>
+		<p>
+			<label for="lastName">LastName</label>
+			<input id="lastName" type="text" name="lastName">
+		</p>
+		<p>
+			<input type="submit" value="Отправить">
+		</p>
+	</form>
 
+	<script>
+	"use strict";
+	
+	let form = document.forms[0];
+	var data = new FormData(form);
+	console.log(data);
+	</script>
 </body>
 </html>
