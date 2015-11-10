@@ -35,7 +35,11 @@ let userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    validator: function(v) {
+      console.log(v);
+      return true;
+    }
   },
 
   firstName: {
@@ -61,13 +65,14 @@ app.use(function* (next) {
   try {
     yield* next;
   } catch(e) {
+    console.info("Info error ", e);
     if (e.status) {
       this.body = e.message;
       this.statusCode = e.status
     } else {
       this.body = "Error";
       this.statusCode = 500;
-      console.error(e.message, e.stack);
+      //console.error(e.message, e.stack);
     }
   }
 });
@@ -81,8 +86,8 @@ router.post("/users", function* (next) {
   yield User.create(body, function(err, user) {
     if (err) {
       //console.log("Error occured ", err);
-      //self.throw(err);
-      return;
+      console.log(err);
+      //return;
     }
 
     self.body = JSON.stringify(user, "", 4);
@@ -90,11 +95,26 @@ router.post("/users", function* (next) {
 });
 
 router.get("/users/:id", function* (next) {
+  let _id = this.params.id;
+  let ctx = this;
 
+  try {
+    let user = yield User.find({_id:_id});
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    console.log(e);
+  }
 });
 
 router.get("/users", function* (next) {
+  let ctx = this;
 
+  try {
+    let users = yield User.find({});
+    ctx.body = users;
+  } catch(e) {
+    console.log("My catched error: ", e);
+  }
 });
 
 router.delete("/users/:id", function* (next) {
