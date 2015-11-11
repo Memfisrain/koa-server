@@ -1,16 +1,11 @@
-/**
- * Created by Nikita_Kulazhenko on 11/4/2015.
- */
 'use strict';
 
-const fs = require("mz/fs");
-
 const app = require("koa")();
-const router = require("koa-router")();
+const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
-const uniqueValidator = require("mongoose-unique-validator");
-
 const mongoose = require("mongoose");
+
+let User =  require("./User");
 
 let users = [
   {id: 3, name: "Pasha", age: 22, sex: "M"},
@@ -31,33 +26,6 @@ mongoose.connect("mongodb://localhost/test", {
   }
 });
 
-let userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validator: function(v) {
-      console.log(v);
-      return true;
-    }
-  },
-
-  firstName: {
-    type: String,
-    required: true
-  },
-
-  lastName: {
-    type: String,
-    required: true
-  }
-});
-
-userSchema.plugin(uniqueValidator, {
-  message: "Error: {PATH} already exist!"
-});
-
-let User = mongoose.model("User", userSchema);
 
 app.use( bodyParser() );
 
@@ -78,25 +46,30 @@ app.use(function* (next) {
 });
 
 
-router.post("/users", function* (next) {
-  let body = this.request.body;
+//Routers
 
-  let self = this;
-
-  yield User.create(body, function(err, user) {
-    if (err) {
-      //console.log("Error occured ", err);
-      console.log(err);
-      //return;
-    }
-
-    self.body = JSON.stringify(user, "", 4);
-  })
+let router = new Router({
+  prefix: "/users"
 });
 
-router.get("/users/:id", function* (next) {
-  let id = this.params.id;
+router.post("/", function* (next) {
+  let body = this.request.body;
+
   let ctx = this;
+
+  try {
+    let user = yield User.create(body);
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    ctx.throw(400, "User with this email already exist");
+  }
+
+});
+
+
+router.get("/:id", function* (next) {
+  let ctx = this;
+  let id = this.params.id;
 
   try {
     let user = yield User.findById(id);
@@ -104,59 +77,50 @@ router.get("/users/:id", function* (next) {
   } catch(e) {
     console.log(e);
   }
+
 });
 
-router.get("/users", function* (next) {
+router.get("/", function* (next) {
   let ctx = this;
 
   try {
     let users = yield User.find({});
-    ctx.body = users;
+    ctx.body = JSON.stringify(users);
   } catch(e) {
     console.log("My catched error: ", e);
+    ctx.throw()
   }
-});
-
-router.delete("/users/:id", function* (next) {
 
 });
 
+router.del("/:id", function* (next) {
+  let ctx = this;
 
+  try {
+    let user = yield User.findByIdAndRemove(ctx.params.id);
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    ctx.throw(404, "User with this email is not found");
+  }
 
-/*
-app.use(bodyParser);
-
-app.use(function* responseTime(next) {
-  let start = new Date;
-  yield next;
-  let ms = new Date - start;
-  this.set("X-Response-Time", ms + "ms");
 });
 
-app.use(function* logger(next) {
-  let start = new Date;
-  yield next;
-  let diff = new Date - start;
-  console.log('%s %s %s %sms',
-    this.method,
-    this.originalUrl,
-    this.status, diff);
+router.patch("/:id", function* (next) {
+  let ctx = this;
+
+  try {
+    let user = yield User.findByIdAndUpdate(ctx.params.id, ctx.request.body);
+    ctx.body = user;
+  } catch(e) {
+    ctx.throw(404);
+  }
+
 });
 
-app.use(function* logger(next) {
-  yield next;
-  if (!this.body) return;
-  this.set("Content-Length", this.body.length);
-});*/
+
 
 app.use(router.routes());
-
 app.listen(3000);
 
-
-// helpers functions
-function getUsers() {
-  return users;
-}
 
 
