@@ -95,11 +95,11 @@ router.post("/users", function* (next) {
 });
 
 router.get("/users/:id", function* (next) {
-  let _id = this.params.id;
+  let id = this.params.id;
   let ctx = this;
 
   try {
-    let user = yield User.find({_id:_id});
+    let user = yield User.findById(id);
     ctx.body = JSON.stringify(user, "", 2);
   } catch(e) {
     console.log(e);
