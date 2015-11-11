@@ -12,5 +12,8 @@
     "mz": "^2.1.0"
   },
   "author": "memfisrain",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "should": "^7.1.1"
+  }
 }
