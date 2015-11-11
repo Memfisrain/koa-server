@@ -35,7 +35,11 @@ let userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    validator: function(v) {
+      console.log(v);
+      return true;
+    }
   },
 
   firstName: {
@@ -61,45 +65,68 @@ app.use(function* (next) {
   try {
     yield* next;
   } catch(e) {
+    console.info("Info error ", e);
     if (e.status) {
       this.body = e.message;
       this.statusCode = e.status
     } else {
       this.body = "Error";
       this.statusCode = 500;
-      console.error(e.message, e.stack);
+      //console.error(e.message, e.stack);
     }
   }
 });
 
 
-router.post("/users", function* (next) {
-  let body = this.request.body;
-  console.log(body);
-  let self = this;
-
-  yield User.create(body, function(err, user) {
-    if (err) {
-      self.throw(err);
-      return;
-    }
-
-    self.body = JSON.stringify(user, "", 4);
-  })
-});
-
 //Routers
 
-router.get("/users/:id", function* (next) {
+router.post("/users", function* (next) {
+  let body = this.request.body;
 
+  let ctx = this;
+
+  try {
+    let user = yield User.create(body);
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    ctx.throw(400, "User with this email already exist");
+  }
+
+});
+
+router.get("/users/:id", function* (next) {
+  let id = this.params.id;
+  let ctx = this;
+
+  try {
+    ctx.body = JSON.stringify(user, "", 2);
+    let user = yield User.findById(id);
+  } catch(e) {
+    ctx.throw(404, "Not found");
+  }
 });
 
 router.get("/users", function* (next) {
+  let ctx = this;
 
+  try {
+    let users = yield User.find({});
+    ctx.body = JSON.stringify(users);
+  } catch(e) {
+    console.log("My catched error: ", e);
+    ctx.throw()
+  }
 });
 
-router.delete("/users/:id", function* (next) {
+router.del("/users/:id", function* (next) {
+  let ctx = this;
 
+  try {
+    let user = yield User.findByIdAndRemove(ctx.params.id);
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    ctx.throw(404, "User with this email is not found");
+  }
 });
 
 
