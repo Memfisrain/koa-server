@@ -75,19 +75,20 @@ app.use(function* (next) {
 
 router.post("/users", function* (next) {
   let body = this.request.body;
-
+  console.log(body);
   let self = this;
 
   yield User.create(body, function(err, user) {
     if (err) {
-      //console.log("Error occured ", err);
-      //self.throw(err);
+      self.throw(err);
       return;
     }
 
     self.body = JSON.stringify(user, "", 4);
   })
 });
+
+//Routers
 
 router.get("/users/:id", function* (next) {
 
@@ -102,32 +103,6 @@ router.delete("/users/:id", function* (next) {
 });
 
 
-
-/*
-app.use(bodyParser);
-
-app.use(function* responseTime(next) {
-  let start = new Date;
-  yield next;
-  let ms = new Date - start;
-  this.set("X-Response-Time", ms + "ms");
-});
-
-app.use(function* logger(next) {
-  let start = new Date;
-  yield next;
-  let diff = new Date - start;
-  console.log('%s %s %s %sms',
-    this.method,
-    this.originalUrl,
-    this.status, diff);
-});
-
-app.use(function* logger(next) {
-  yield next;
-  if (!this.body) return;
-  this.set("Content-Length", this.body.length);
-});*/
 
 app.use(router.routes());
 
