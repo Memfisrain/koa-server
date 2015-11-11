@@ -85,16 +85,26 @@ router.post("/users", function* (next) {
 
   let ctx = this;
 
+<<<<<<< HEAD
   try {
     let user = yield User.create(body);
     ctx.body = JSON.stringify(user, "", 2);
   } catch(e) {
     ctx.throw(400, "User with this email already exist");
   }
+=======
+  yield User.create(body, function(err, user) {
+    if (err) {
+      //console.log("Error occured ", err);
+      console.log(err);
+      //return;
+    }
+>>>>>>> 03742f5fb833a6046c460edce4fe1ab7a94bf884
 
 });
 
 router.get("/users/:id", function* (next) {
+<<<<<<< HEAD
   let id = this.params.id;
   let ctx = this;
 
@@ -103,6 +113,16 @@ router.get("/users/:id", function* (next) {
     let user = yield User.findById(id);
   } catch(e) {
     ctx.throw(404, "Not found");
+=======
+  let _id = this.params.id;
+  let ctx = this;
+
+  try {
+    let user = yield User.find({_id:_id});
+    ctx.body = JSON.stringify(user, "", 2);
+  } catch(e) {
+    console.log(e);
+>>>>>>> 03742f5fb833a6046c460edce4fe1ab7a94bf884
   }
 });
 
@@ -111,10 +131,16 @@ router.get("/users", function* (next) {
 
   try {
     let users = yield User.find({});
+<<<<<<< HEAD
     ctx.body = JSON.stringify(users);
   } catch(e) {
     console.log("My catched error: ", e);
     ctx.throw()
+=======
+    ctx.body = users;
+  } catch(e) {
+    console.log("My catched error: ", e);
+>>>>>>> 03742f5fb833a6046c460edce4fe1ab7a94bf884
   }
 });
 
