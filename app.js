@@ -7,14 +7,6 @@ const mongoose = require("mongoose");
 
 let User =  require("./User");
 
-let users = [
-  {id: 3, name: "Pasha", age: 22, sex: "M"},
-  {id: 4, name: "Andrey", age: 31, sex: "M"},
-  {id: 5, name: "Sergey", age: 19, sex: "M"},
-  {id: 6, name: "Vadim", age: 23, sex: "M"}
-];
-
-
 mongoose.set("debug", true);
 
 mongoose.connect("mongodb://localhost/test", {
@@ -35,12 +27,12 @@ app.use(function* (next) {
   } catch(e) {
     console.info("Info error ", e);
     if (e.status) {
+      console.log("status is ", e.status);
       this.body = e.message;
-      this.statusCode = e.status
+      this.status = e.status
     } else {
       this.body = "Error";
-      this.statusCode = 500;
-      //console.error(e.message, e.stack);
+      this.status = 500;
     }
   }
 });
@@ -99,27 +91,28 @@ router.del("/:id", function* (next) {
     let user = yield User.findByIdAndRemove(ctx.params.id);
     ctx.body = JSON.stringify(user, "", 2);
   } catch(e) {
-    ctx.throw(404, "User with this email is not found");
+    console.log("Error occured when delete");
+    ctx.throw("User with this email is not found", 404);
   }
 
 });
 
 router.patch("/:id", function* (next) {
   let ctx = this;
+  let id = this.params.id;
 
   try {
-    let user = yield User.findByIdAndUpdate(ctx.params.id, ctx.request.body);
+    let user = yield User.findByIdAndUpdate(ctx.params.id, ctx.request.body, {"new": true});
     ctx.body = user;
   } catch(e) {
     ctx.throw(404);
   }
-
 });
 
-
-
 app.use(router.routes());
-app.listen(3000);
+
+module.exports = app;
+
 
 
 
