@@ -58,12 +58,13 @@ router.post("/", function* (next) {
 
 });
 
+
 router.get("/:id", function* (next) {
   let ctx = this;
-  let _id = this.params.id;
+  let id = this.params.id;
 
   try {
-    let user = yield User.findOne({_id:_id});
+    let user = yield User.findById(id);
     ctx.body = JSON.stringify(user, "", 2);
   } catch(e) {
     console.log(e);
