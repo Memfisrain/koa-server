@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 
 let User =  require("./User");
 
-mongoose.set("debug", true);
+mongoose.set("debug", false);
 
 mongoose.connect("mongodb://localhost/test", {
   server: {
@@ -44,45 +44,29 @@ let router = new Router({
   prefix: "/users"
 });
 
-router.post("/", function* (next) {
-  let body = this.request.body;
-
-  let ctx = this;
-
-  try {
-    let user = yield User.create(body);
-    ctx.body = JSON.stringify(user, "", 2);
-  } catch(e) {
-    ctx.throw(400, "User with this email already exist");
+router.param("id", function* (id, next) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    this.throw(404);
   }
 
+  this.user = yield User.findById(id);
+
+  yield* next;
+});
+
+router.post("/", function* (next) {
+  let user = yield User.create(this.request.body);
+  this.body = user.toObject();
 });
 
 
 router.get("/:id", function* (next) {
-  let ctx = this;
-  let id = this.params.id;
-
-  try {
-    let user = yield User.findById(id);
-    ctx.body = JSON.stringify(user, "", 2);
-  } catch(e) {
-    console.log(e);
-  }
-
+  this.body = this.user.toObject();
 });
 
 router.get("/", function* (next) {
-  let ctx = this;
-
-  try {
-    let users = yield User.find({});
-    ctx.body = JSON.stringify(users);
-  } catch(e) {
-    console.log("My catched error: ", e);
-    ctx.throw()
-  }
-
+  let users = yield User.find({}).lean();
+  this.body = JSON.stringify(users);
 });
 
 router.del("/:id", function* (next) {
