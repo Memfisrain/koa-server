@@ -5,19 +5,12 @@ const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
 const mongoose = require("mongoose");
 
+const config = require("config");
+
 let User =  require("./User");
 
-mongoose.set("debug", false);
-
-mongoose.connect("mongodb://localhost/test", {
-  server: {
-    socketOptions: {
-      keepAlive: 1
-    },
-    poolSize: 5
-  }
-});
-
+mongoose.set("debug", config.get("mongoose").debug);
+mongoose.connect("mongodb://localhost/test", config.get("mongoose").server);
 
 app.use( bodyParser() );
 
@@ -25,13 +18,11 @@ app.use(function* (next) {
   try {
     yield* next;
   } catch(e) {
-    console.info("Info error ", e);
     if (e.errors) {
       //this is error throw by mongoose
       this.body = e.message;
       this.status = 400;
     } else if (e.status) {
-      console.log("status is ", e.status);
       this.body = e.message;
       this.status = e.status
     } else {

@@ -1,5 +1,6 @@
 "use strict";
 
 const app = require("./app");
+const config = require("config");
 
-let server = app.listen(3000);
+let server = app.listen(config.get("mongoose").port);

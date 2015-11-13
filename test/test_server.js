@@ -10,7 +10,6 @@ function getURL(path){
 };
 
 
-
 describe("User REST API", function(){
     let server;
 
@@ -45,7 +44,7 @@ describe("User REST API", function(){
                 json: true,
                 body: newUserData
             });
-            console.log(response.body);
+
             response.body.email.should.exist;
         });
 
