@@ -1,6 +1,6 @@
 "use strict";
 
-const server = require('../server');
+const app = require('../app');
 const request = require('co-request');
 
 var User = require('../User');
@@ -9,7 +9,18 @@ function getURL(path){
     return `http://localhost:3000${path}`;
 };
 
+
+
 describe("User REST API", function(){
+    let server;
+
+    before(function() {
+        server = app.listen(3000);
+    });
+
+    after(function() {
+        server.close();
+    });
 
     let existingUserData = {
         email: "john@test.ru"
@@ -17,7 +28,8 @@ describe("User REST API", function(){
     let newUserData = {
         email: "alice@test.ru"
     };
-	let existingUser;
+
+	  let existingUser;
 
     beforeEach(function* (){
         // load fixtures
@@ -47,7 +59,7 @@ describe("User REST API", function(){
             response.statusCode.should.eql(400);
         });
 		
-		it("throws if email not valid", function*() {
+		    it("throws if email not valid", function*() {
             let response = yield request({
                 method: 'post',
                 url: getURL('/users'),
@@ -59,12 +71,12 @@ describe("User REST API", function(){
 
     });
 	
-	describe("GET /user/:userById", function() {
+	  describe("GET /user/:userById", function() {
         it("gets the user by id", function* (){
             let response = yield request.get( getURL('/users/' + existingUser._id) );
-			JSON.parse(response.body).email.should.exist;
-			response.statusCode.should.eql(200);
-			response.headers['content-type'].should.match(/application\/json/);
+            JSON.parse(response.body).email.should.exist;
+            response.statusCode.should.eql(200);
+            response.headers['content-type'].should.match(/application\/json/);
         });
 
         it("returns 404 if user does not exist", function*() {
@@ -73,17 +85,17 @@ describe("User REST API", function(){
         });
 
         it("returns 404 if invalid id", function*() {
-			let response = yield request.get( getURL('/users/kkkkk') );
+			      let response = yield request.get( getURL('/users/kkkkk') );
             response.statusCode.should.eql(404);
         });
     });
 	
-	describe("DELETE /user/:userById", function() {
+	  describe("DELETE /user/:userById", function() {
         it("removes user", function* (){
             let response = yield request.del( getURL('/users/' + existingUser._id) );
-			response.statusCode.should.eql(200);
-			let users = yield User.find({}).exec();
-			users.length.should.eql(0);
+            response.statusCode.should.eql(200);
+            let users = yield User.find({}).exec();
+            users.length.should.eql(0);
         });
 
         it("returns 404 if the user does not exist", function*() {
@@ -91,11 +103,13 @@ describe("User REST API", function(){
             response.statusCode.should.eql(404);
         });
     });
+
 	
-	it("GET /users gets all users", function* (){
+	  it("GET /users gets all users", function* (){
 		 let response = yield request.get( getURL('/users') );
 		 response.statusCode.should.eql(200);
 		 response.headers['content-type'].should.match(/application\/json/);
 		 JSON.parse(response.body).length.should.eql(1);
     });
+
 });

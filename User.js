@@ -6,17 +6,22 @@ let userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    validate: {
+      validator: function(val) {
+        return /.+?@.+?\.[a-zA-Z]+$/.test(val);
+      }
+    }
   },
 
   firstName: {
     type: String,
-    required: true
+    required: false
   },
 
   lastName: {
     type: String,
-    required: true
+    required: false
   }
 });
 

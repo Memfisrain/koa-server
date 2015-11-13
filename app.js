@@ -26,7 +26,11 @@ app.use(function* (next) {
     yield* next;
   } catch(e) {
     console.info("Info error ", e);
-    if (e.status) {
+    if (e.errors) {
+      //this is error throw by mongoose
+      this.body = e.message;
+      this.status = 400;
+    } else if (e.status) {
       console.log("status is ", e.status);
       this.body = e.message;
       this.status = e.status
@@ -51,6 +55,10 @@ router.param("id", function* (id, next) {
 
   this.user = yield User.findById(id);
 
+  if (!this.user) {
+    this.throw(404);
+  }
+
   yield* next;
 });
 
@@ -61,37 +69,24 @@ router.post("/", function* (next) {
 
 
 router.get("/:id", function* (next) {
+  console.log(this.user);
   this.body = this.user.toObject();
 });
 
 router.get("/", function* (next) {
   let users = yield User.find({}).lean();
-  this.body = JSON.stringify(users);
+  this.body = users;
 });
 
 router.del("/:id", function* (next) {
-  let ctx = this;
-
-  try {
-    let user = yield User.findByIdAndRemove(ctx.params.id);
-    ctx.body = JSON.stringify(user, "", 2);
-  } catch(e) {
-    console.log("Error occured when delete");
-    ctx.throw("User with this email is not found", 404);
-  }
+  let user = yield this.user.remove();
+  this.body = user.toObject();
 
 });
 
 router.patch("/:id", function* (next) {
-  let ctx = this;
-  let id = this.params.id;
-
-  try {
-    let user = yield User.findByIdAndUpdate(ctx.params.id, ctx.request.body, {"new": true});
-    ctx.body = user;
-  } catch(e) {
-    ctx.throw(404);
-  }
+  let user = yield User.findByIdAndUpdate(this.params.id, this.request.body, {"new": true});
+  this.body = user.toObject();
 });
 
 app.use(router.routes());
