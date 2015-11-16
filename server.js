@@ -3,4 +3,4 @@
 const app = require("./app");
 const config = require("config");
 
-let server = app.listen(config.get("mongoose").port);
+let server = app.listen(config.get("server").port);
